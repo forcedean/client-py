@@ -258,13 +258,19 @@ class FHIROAuth2Auth(FHIRAuth):
         """ These parameters are used by to exchange the given code for an
         access token.
         """
-        return {
+        params = {
             'client_id': self.app_id,
             'code': code,
             'grant_type': 'authorization_code',
             'redirect_uri': self._redirect_uri,
             'state': self.auth_state,
         }
+        
+        if self.jwt_token:
+            del params['client_id']
+            params['client_assertion_type'] = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+            params['client_assertion'] = self.jwt_token
+        return params
     
     def _request_access_token(self, server, params):
         """ Requests an access token from the instance's server via a form POST
